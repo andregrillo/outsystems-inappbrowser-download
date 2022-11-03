@@ -1,6 +1,8 @@
+cordova.define("com-outsystems-experts-anbinappbrowserdownload.anb-inappbrowser-download", function(require, exports, module) {
 var exec = require('cordova/exec');
 
 function download(url, filename, contentType, successCallback, errorCallback){
+console.log(">>> 0");
     var options = {};
     var args = {
         url: url,
@@ -8,31 +10,36 @@ function download(url, filename, contentType, successCallback, errorCallback){
         contentType: contentType,
         options: options
     };
+    console.log(">>> 0 url: " + url);
+    console.log(">>> 0 filename: " + filename);
     document.addEventListener('deviceready', function () {
+    console.log(">>> 1");
         setTimeout(function() {
             downloadDocument(args, function(entry, contentType){
                 if (!!successCallback && typeof(successCallback) === 'function'){
                     successCallback(entry, contentType);
                 }
-                console.log("download complete: " + entry.toURL());
+                console.log(">>> download complete: " + entry.toURL());
             }, function(error){
                 if (!!errorCallback && typeof(errorCallback) === 'function'){
                     errorCallback(error);
                 }
-                console.log("download error source " + error.source);
-                console.log("download error target " + error.target);
-                console.log("upload error code" + error.code);
+                console.log(">>> download error source: " + error.source);
+                console.log(">>> download error target: " + error.target);
+                console.log(">>> upload error code: " + error.code);
             }); // call the function which will download the file 1s after the window is closed, just in case..
         }, 1000);
     });
 }
 
 function downloadDocument(args, successCallback, errorCallback){
+console.log(">>> 2");
+
     var uri = encodeURI(args.url);
     var filename = args.filename;
     var contentType = args.contentType;
     window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
-        console.log('file system open: ' + fs.name);
+        console.log('>>> file system open: ' + fs.name);
         fs.root.getFile(filename, { create: true, exclusive: false }, function (fileEntry) {
 
             var fileTransfer = new FileTransfer();
@@ -44,23 +51,24 @@ function downloadDocument(args, successCallback, errorCallback){
                     if (!!successCallback && typeof(successCallback) === 'function'){
                         successCallback(entry, contentType);
                     }
-                    //console.log("download complete: " + entry.toURL());
+                    console.log(">>> download complete: " + entry.toURL());
                 },
                 function(error) {
                      if (!!errorCallback && typeof(errorCallback) === 'function'){
                         errorCallback(error);
                      }
-                    console.log("download error source " + error.source);
-                    console.log("download error target " + error.target);
-                    console.log("download error code" + error.code);
+                    console.log(">>> download error source " + error.source);
+                    console.log(">>> download error target " + error.target);
+                    console.log(">>> download error code" + error.code);
                 },
                 false
             );
-        }, function (err) { console.error('error getting file! ' + err); });
-    }, function (err) { console.error('error getting persistent fs! ' + err); });
+        }, function (err) { console.error('>>> error getting file! ' + err); });
+    }, function (err) { console.error('>>> error getting persistent fs! ' + err); });
 }
 
 function isIphoneX() {
+console.log(">>> 3");
     try {
         const iphoneModel = window.device.model;
         const m = iphoneModel.match(/iPhone(\d+),?(\d+)?/);
@@ -77,10 +85,12 @@ function isIphoneX() {
 }
 
 exports.close = function(){
+console.log(">>> 4");
     window.inAppBrowserRef.close();
 }
 
 exports.open = function (arg0, success, error) {
+console.log(">>> 5");
     var fileOpenMode = "open";
     var fileOpenModes = ["open", "dialog"];
     var autoFixHeaderSize = true;
@@ -104,6 +114,10 @@ exports.open = function (arg0, success, error) {
     var inAppBrowserOptions = arg0.inAppBrowserOptions;
     var buttonClassName = arg0.buttonClassName;
 
+    console.log(">>> 5 - url: " + url);
+    console.log(">>> 5 - inAppBrowserOptions: " + inAppBrowserOptions);
+    console.log(">>> 5 - buttonClassName: " + buttonClassName);
+
     window.inAppBrowserRef = cordova.InAppBrowser.open(url, '_blank',  inAppBrowserOptions);
 
     //add viewport-fit=cover so we can fill the left and right sides of the notch (if it exists)
@@ -117,15 +131,22 @@ exports.open = function (arg0, success, error) {
     }
 
     //if no setTimeout the click event listener is not added on android
+    //"url: downloadButton.dataset.documenturl," +
+    //"filename: downloadButton.dataset.filename," +
+    //"contentType: downloadButton.dataset.contenttype" +
+    //"debugger;" +
     script += "setTimeout(function(){" +
                 "var downloadButtons = document.querySelectorAll(\"." + buttonClassName + "\");" +
                 "downloadButtons.forEach(function(downloadButton){ " +
                     "if (downloadButton) {" +
                         "downloadButton.addEventListener('click', function(e){" +
+                            //"debugger;" +
                             "var args = {" +
-                                "url: downloadButton.dataset.documenturl," +
-                                "filename: downloadButton.dataset.filename," +
-                                "contentType: downloadButton.dataset.contenttype" +
+                                "url: downloadButton.href," +
+                                //"url: decodeURI(downloadButton.href)," +
+                                //"filename: \"تحقيقات مكافحة الإغراق المرفوعة من قبل الدولة 2021.xlsx\"," +
+                                "filename: \"2021.xlsx\"," +
+                                "contentType: \"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\"" +
                             "};" +
                             "webkit.messageHandlers.cordova_iab.postMessage(JSON.stringify(args));" +
                         "});" +
@@ -142,34 +163,48 @@ exports.open = function (arg0, success, error) {
     });
 
     window.inAppBrowserRef.addEventListener('message', function(args) {
-        console.log('MESSAGE RECEIVED FROM IN_APP_BROWSER');
+        console.log('>>> MESSAGE RECEIVED FROM IN_APP_BROWSER' + JSON.stringify(args));
         download(args.data.url, args.data.filename, args.data.contentType, function(entry, contentType){
+        //console.log(">>> ");
             if (fileOpenMode === "open"){
+                console.log("*>>> Open File");
+                console.log("*>>> entry.toURL: " + entry.toURL());
+                console.log("*>>> contentType: " + contentType);
+                debugger;
                 cordova.plugins.fileOpener2.open(entry.toURL(), contentType,
                     function(e){
+                        console.log("*>>> error: " + error);
+                        alert("Erro");
                         error(e);
                     },
                     function(){
+                        console.log("*>>> Success!!!");
+                        alert("Success");
                         success();
                     }
                 );
             }
             if (fileOpenMode === "dialog"){
+                console.log(">>> Dialog");
                 if (cordova.platformId === 'android'){
                     cordova.plugins.fileOpener2.save(entry.toURL(), args.data.filename, contentType,
                         function(e){
+                            alert("Erro 1");
                             error(e);
                         },
                         function(){
+                            alert("Sucesso 1");
                             success();
                         }
                     );
                 } else if(cordova.platformId === 'ios'){
                     cordova.plugins.fileOpener2.showOpenWithDialog(entry.toURL(), contentType,
                         function(e){
+                            alert("Erro 2");
                             error(e);
                         },
                         function(){
+                            alert("Sucesso 2");
                             success();
                         }
                     );
@@ -180,3 +215,4 @@ exports.open = function (arg0, success, error) {
         });
     });
 };
+});
