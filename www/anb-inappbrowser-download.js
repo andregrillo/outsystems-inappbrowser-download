@@ -170,7 +170,6 @@ console.log(">>> 5");
                 console.log("*>>> Open File");
                 console.log("*>>> entry.toURL: " + entry.toURL());
                 console.log("*>>> contentType: " + contentType);
-                debugger;
                 cordova.plugins.fileOpener2.open(entry.toURL(), contentType,
                     function(e){
                         console.log("*>>> error: " + error);
