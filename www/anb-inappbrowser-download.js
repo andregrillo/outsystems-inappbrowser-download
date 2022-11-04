@@ -1,4 +1,3 @@
-cordova.define("com-outsystems-experts-anbinappbrowserdownload.anb-inappbrowser-download", function(require, exports, module) {
 var exec = require('cordova/exec');
 
 function download(url, filename, contentType, successCallback, errorCallback){
@@ -139,14 +138,16 @@ console.log(">>> 5");
                 "var downloadButtons = document.querySelectorAll(\"." + buttonClassName + "\");" +
                 "downloadButtons.forEach(function(downloadButton){ " +
                     "if (downloadButton) {" +
+                        'let pattern = /[^/\\\\&\\?]+\\.\\w{3,4}(?=([\\?&/].*$|$))/i;' +
+                        "let decodedURI = decodeURI(decodeURI(downloadButton.href));" +
+                        "let fileNameRegex = decodedURI.match(pattern)[0];" +
+                        "debugger;" +
                         "downloadButton.addEventListener('click', function(e){" +
-                            //"debugger;" +
+                            "debugger;" +
                             "var args = {" +
                                 "url: downloadButton.href," +
-                                //"url: decodeURI(downloadButton.href)," +
-                                //"filename: \"تحقيقات مكافحة الإغراق المرفوعة من قبل الدولة 2021.xlsx\"," +
-                                "filename: \"2021.xlsx\"," +
-                                "contentType: \"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\"" +
+                                "filename: fileNameRegex," +
+                                //"contentType: \"\"" +
                             "};" +
                             "webkit.messageHandlers.cordova_iab.postMessage(JSON.stringify(args));" +
                         "});" +
@@ -170,13 +171,16 @@ console.log(">>> 5");
                 console.log("*>>> Open File");
                 console.log("*>>> entry.toURL: " + entry.toURL());
                 console.log("*>>> contentType: " + contentType);
+                //debugger;
                 cordova.plugins.fileOpener2.open(entry.toURL(), contentType,
                     function(e){
+                        debugger;
                         console.log("*>>> error: " + error);
                         alert("Erro");
                         error(e);
                     },
                     function(){
+                        debugger;
                         console.log("*>>> Success!!!");
                         alert("Success");
                         success();
@@ -188,10 +192,12 @@ console.log(">>> 5");
                 if (cordova.platformId === 'android'){
                     cordova.plugins.fileOpener2.save(entry.toURL(), args.data.filename, contentType,
                         function(e){
+                            debugger;
                             alert("Erro 1");
                             error(e);
                         },
                         function(){
+                            debugger;
                             alert("Sucesso 1");
                             success();
                         }
@@ -214,4 +220,3 @@ console.log(">>> 5");
         });
     });
 };
-});
